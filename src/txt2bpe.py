@@ -2,6 +2,8 @@ import os
 import pickle
 import sys
 
+REPORT_FREQ: int = 1
+
 
 def main() -> None:
     program_name: str = sys.argv[0]
@@ -29,7 +31,11 @@ def bpe(input_file_path: str, output_file_path: str) -> None:
     tokens_out: list[int] = []
     pairs: list[tuple[int, int]] = [(i, 0) for i in range(256)]
 
+    iteration: int = 0
     while True:
+        if iteration % REPORT_FREQ == 0:
+            report_progress(iteration=iteration, tokens=tokens_in, pairs=pairs)
+
         freqs.clear()
         for i in range(len(tokens_in) - 1):
             pair: tuple[int, int] = (tokens_in[i], tokens_in[i + 1])
@@ -58,8 +64,17 @@ def bpe(input_file_path: str, output_file_path: str) -> None:
                     i += 1
 
         tokens_in, tokens_out = tokens_out, tokens_in
+        iteration += 1
 
     dumb_pairs(file_path=output_file_path, pairs=pairs)
+
+
+def report_progress(
+    iteration: int, tokens: list[int], pairs: list[tuple[int, int]]
+) -> None:
+    print(f"INFO: iteration{iteration}")
+    print(f"\t Text tokens count: {len(tokens)}")
+    print(f"\t BPE table size: {len(pairs)}")
 
 
 def render_tokens(pairs: list[tuple[int, int]], tokens: list[int]) -> None:
